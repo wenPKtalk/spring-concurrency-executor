@@ -1,8 +1,10 @@
 package com.topsion.service;
 
-import com.topsion.aop.ConcurrencyTaskExecutorAspect;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.topsion.aop.ConcurrencyTaskExecutorAspect;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,10 +12,13 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.jupiter.api.Assertions.*;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
+@Slf4j
 class ConcurrencyExecutorServiceTest {
 
     @Autowired
@@ -30,7 +35,6 @@ class ConcurrencyExecutorServiceTest {
         CountDownLatch executionLatch = new CountDownLatch(threadCount);
         AtomicInteger concurrentExecutions = new AtomicInteger(0);
         AtomicInteger maxConcurrentExecutions = new AtomicInteger(0);
-        String projectId = "p1";
 
         // When
         List<Thread> threads = new ArrayList<>();
@@ -44,7 +48,7 @@ class ConcurrencyExecutorServiceTest {
                     concurrentExecutions.decrementAndGet();
                     executionLatch.countDown();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log.error("Error occurred", e);
                 }
             });
             threads.add(thread);

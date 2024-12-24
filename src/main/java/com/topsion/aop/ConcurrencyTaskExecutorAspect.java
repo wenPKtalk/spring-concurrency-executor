@@ -26,18 +26,19 @@ public class ConcurrencyTaskExecutorAspect {
     private final Map<Method, ThreadPoolExecutor> executorCache = new ConcurrentHashMap<>();
 
     @Around("@annotation(concurrencyTask)")
+    @SuppressWarnings("DangerousThreadPoolExecutorUsage")
     public Object handleConcurrencyTask(ProceedingJoinPoint joinPoint, ConcurrencyTask concurrencyTask) throws Throwable {
         final int maxCount = getOrFromConfiguration(concurrencyTask.maxCount(), concurrencyTask.maxCountKey());
         final int waitQueue = getOrFromConfiguration(concurrencyTask.waitQueue(), concurrencyTask.waitQueueKey());
 
         Method method = ((MethodSignature) joinPoint.getSignature()).getMethod();
-        ThreadPoolExecutor executor = executorCache.computeIfAbsent(method, m ->
+        ThreadPoolExecutor executor = executorCache.computeIfAbsent(method, _m ->
                 new ConcurrencyExecutorThreadPool(
                         method.getName(),
                         maxCount,
-                        waitQueue,
+                        maxCount,
                         5L, TimeUnit.SECONDS,
-                        new ArrayBlockingQueue<>(concurrencyTask.waitQueue()),
+                        new ArrayBlockingQueue<>(waitQueue),
                         new ThreadPoolExecutor.CallerRunsPolicy()
                 )
         );

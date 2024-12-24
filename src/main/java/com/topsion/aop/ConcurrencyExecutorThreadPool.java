@@ -1,5 +1,6 @@
 package com.topsion.aop;
 
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.*;
@@ -22,9 +23,11 @@ public class ConcurrencyExecutorThreadPool extends ThreadPoolExecutor {
     }
 
     @Override
+    @SuppressWarnings("Slf4jLogsafeArgs")
     protected void beforeExecute(Thread t, Runnable r) {
         super.beforeExecute(t, r);
         int taskNumber = taskNo.incrementAndGet();
-        log.info("ConcurrencyExecutorPool--[{}] start execute {} task (active task: {}, wait queue: {})", poolName, taskNumber, super.getActiveCount(), super.getQueue().size());
+        log.info("ConcurrencyExecutorPool--[{}] start execute {} task (active task: {}, wait queue: {})", poolName, taskNumber, super.getActiveCount(),
+                Objects.nonNull(super.getQueue()) ? super.getQueue().size() : 0);
     }
 }

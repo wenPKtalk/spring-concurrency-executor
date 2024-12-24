@@ -1,19 +1,89 @@
 plugins {
     id("java")
+    id 'org.springframework.boot' version "${springBootVersion}"
+    id 'io.spring.dependency-management' version "${springDependencyManagementVersion}"
+    id("com.palantir.baseline") version "6.5.0"
+    id("com.palantir.baseline-config") version "6.5.0"
+}
+
+allprojects {
+    apply plugin: 'com.palantir.baseline'
+}
+
+idea {
+    workspace {
+        iws {
+            withXml { provider ->
+                def node = provider.asNode()
+                // 检查是否存在 PropertiesComponent 节点，避免 null 引发异常
+                def propertiesComponentNode = node.component.find { it.@name == 'PropertiesComponent' }
+                if (propertiesComponentNode) {
+                    node.remove(propertiesComponentNode)
+                }
+            }
+        }
+    }
 }
 
 group = "org.example"
 version = "1.0-SNAPSHOT"
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-aop")
+    implementation("org.springframework.boot:spring-boot-starter-logging")
+    implementation 'org.aspectj:aspectjrt:1.9.20'
+    implementation 'org.aspectj:aspectjweaver:1.9.20'
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+    compileOnly 'org.projectlombok:lombok:1.18.36'
+    annotationProcessor 'org.projectlombok:lombok:1.18.36'
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("org.mockito:mockito-core:5.5.0")
+    testImplementation("org.mockito:mockito-junit-jupiter:5.5.0")
 }
 
 tasks.test {
+    useJUnitPlatform()
+}
+
+task generateResourcesDir {
+    doLast {
+        def resourcesDir = file("src/main/resources")
+        if (!resourcesDir.exists()) {
+            resourcesDir.mkdirs()
+            println("Created resources directory: $resourcesDir")
+        }
+    }
+}
+
+task deleteIwsFile {
+    doLast {
+        def iwsFile = file("${projectDir}/spring-concurrency-executor.iws")
+        if (iwsFile.exists()) {
+            iwsFile.delete()
+            println("Deleted existing .iws file: ${iwsFile}")
+        } else {
+            println(".iws file does not exist.")
+        }
+    }
+}
+
+tasks.getByName("idea") {
+    dependsOn generateResourcesDir, deleteIwsFile
+}
+
+test {
     useJUnitPlatform()
 }
