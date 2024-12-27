@@ -2,12 +2,13 @@ plugins {
     id("java")
     id 'org.springframework.boot' version "${springBootVersion}"
     id 'io.spring.dependency-management' version "${springDependencyManagementVersion}"
-    id("com.palantir.baseline") version "6.5.0"
-    id("com.palantir.baseline-config") version "6.5.0"
+    id("com.palantir.baseline") version "${comPalantirBaselineVersion}"
+    id("com.palantir.baseline-config") version "${comPalantirBaselineVersion}"
 }
 
 allprojects {
     apply plugin: 'com.palantir.baseline'
+    apply plugin: 'com.palantir.baseline-format'
 }
 
 idea {
@@ -52,13 +53,16 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.mockito:mockito-core:5.5.0")
     testImplementation("org.mockito:mockito-junit-jupiter:5.5.0")
+    testAnnotationProcessor 'org.projectlombok:lombok'
+    testCompileOnly 'org.projectlombok:lombok'
 }
 
 tasks.test {
     useJUnitPlatform()
+    systemProperty "lombok.config.stopBubbling", "true"
 }
 
-task generateResourcesDir {
+tasks.register('generateResourcesDir') {
     doLast {
         def resourcesDir = file("src/main/resources")
         if (!resourcesDir.exists()) {
@@ -68,7 +72,7 @@ task generateResourcesDir {
     }
 }
 
-task deleteIwsFile {
+tasks.register('deleteIwsFile') {
     doLast {
         def iwsFile = file("${projectDir}/spring-concurrency-executor.iws")
         if (iwsFile.exists()) {

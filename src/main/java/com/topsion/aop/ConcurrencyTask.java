@@ -1,3 +1,6 @@
+/*
+ * (c) Copyright 2024 Palantir Technologies Inc. All rights reserved.
+ */
 package com.topsion.aop;
 
 import java.lang.annotation.ElementType;

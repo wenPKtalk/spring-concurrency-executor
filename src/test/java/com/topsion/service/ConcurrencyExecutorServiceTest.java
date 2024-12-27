@@ -1,3 +1,6 @@
+/*
+ * (c) Copyright 2024 Palantir Technologies Inc. All rights reserved.
+ */
 package com.topsion.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -10,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -36,8 +38,8 @@ class ConcurrencyExecutorServiceTest {
         AtomicInteger concurrentExecutions = new AtomicInteger(0);
         AtomicInteger maxConcurrentExecutions = new AtomicInteger(0);
 
-        // When
         List<Thread> threads = new ArrayList<>();
+        // When
         for (int i = 0; i < threadCount; i++) {
             Thread thread = new Thread(() -> {
                 try {
@@ -51,7 +53,6 @@ class ConcurrencyExecutorServiceTest {
                     log.error("Error occurred", e);
                 }
             });
-            threads.add(thread);
             thread.start();
         }
 
@@ -71,7 +72,7 @@ class ConcurrencyExecutorServiceTest {
         assertEquals(5, maxConcurrentExecutions.get(), "Maximum concurrent executions should be 3.");
 
         // 等待所有任务完成
-        executionLatch.await(7, TimeUnit.SECONDS);
+        executionLatch.await();
 
         // 验证所有任务都已完成
         assertEquals(0, concurrentExecutions.get(), "All executions should be completed");
